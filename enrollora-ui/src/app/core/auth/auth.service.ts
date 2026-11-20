@@ -22,6 +22,8 @@ export class AuthService {
       tap((response) => {
         this.tokenService.setToken(response.token);
         this.tokenService.setRole(response.role);
+        this.tokenService.setName(response.name);
+        this.tokenService.setEmail(response.email);
       }),
     );
   }
