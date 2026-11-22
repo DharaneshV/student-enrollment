@@ -29,18 +29,17 @@
         Enrollments
       </a>
 
-      <div class="nav-link disabled">
+      <a routerLink="/admin/cancellation-requests" routerLinkActive="active" class="nav-link">
         <span class="nav-icon">↻</span>
         Cancellation Requests
-        <span class="coming-soon">Soon</span>
-      </div>
+      </a>
     </div>
 
     <div class="sidebar-footer">
-      <div class="admin-avatar">A</div>
+      <div class="admin-avatar">{{ adminInitial }}</div>
       <div class="admin-info">
-        <strong>Administrator</strong>
-        <small>System Admin</small>
+        <strong>{{ adminName }}</strong>
+        <small>{{ adminEmail }}</small>
       </div>
     </div>
   </aside>
