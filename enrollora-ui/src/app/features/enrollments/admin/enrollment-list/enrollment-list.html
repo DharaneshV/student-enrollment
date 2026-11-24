@@ -21,16 +21,17 @@
       <h3>{{ totalRecords() }}</h3>
     </div>
   </div>
-<!-- Filters Toolbar -->
+
+  <!-- Filters Toolbar -->
   <div class="filter-card">
     <div class="filter-row">
       <div class="filter-group search-group">
-        <label for="enrollSearch">Search Student</label>
+        <label for="enrollmentSearch">Search Student</label>
         <input
-          id="enrollSearch"
+          id="enrollmentSearch"
           type="text"
           class="form-control"
-          placeholder="Name or email..."
+          placeholder="Student name or email..."
           [ngModel]="searchTerm()"
           (ngModelChange)="searchTerm.set($event)"
           (keyup.enter)="applyFilters()"
@@ -42,8 +43,8 @@
         <select
           id="courseFilter"
           class="form-select"
-          [ngModel]="courseIdFilter()"
-          (ngModelChange)="courseIdFilter.set($event)"
+          [ngModel]="selectedCourseId()"
+          (ngModelChange)="selectedCourseId.set($event)"
         >
           <option [ngValue]="null">All Courses</option>
           @for (course of courses(); track course.courseId) {
@@ -61,8 +62,8 @@
           (ngModelChange)="statusFilter.set($event)"
         >
           <option [ngValue]="null">All Statuses</option>
-          <option [ngValue]="0">Active</option>
-          <option [ngValue]="1">Cancelled</option>
+          <option [ngValue]="EnrollmentStatus.Active">Active</option>
+          <option [ngValue]="EnrollmentStatus.Cancelled">Cancelled</option>
         </select>
       </div>
 
@@ -94,112 +95,102 @@
       </div>
     </div>
   </div>
+
   <!-- Loading -->
   @if (isLoading()) {
-    <div class="state-message">
-      <div class="spinner-border text-primary"></div>
-      <p>Loading enrollments...</p>
-    </div>
+  <div class="state-message">
+    <div class="spinner-border text-primary"></div>
+    <p>Loading enrollments...</p>
+  </div>
   }
 
   <!-- Error -->
   @if (errorMessage()) {
-    <div class="alert alert-danger">
-      {{ errorMessage() }}
-      <button class="btn btn-sm btn-outline-danger ms-2" (click)="loadEnrollments()">Retry</button>
-    </div>
+  <div class="alert alert-danger">
+    {{ errorMessage() }}
+    <button class="btn btn-sm btn-outline-danger ms-2" (click)="loadEnrollments()">Retry</button>
+  </div>
   }
 
   <!-- Enrollment Table -->
   @if (!isLoading() && !errorMessage()) {
-    <div class="table-container">
-      <table class="table align-middle">
-        <thead>
-          <tr>
-            <th>Student</th>
-            <th>Course</th>
-            <th>Enrollment Date</th>
-            <th>Status</th>
-          </tr>
-        </thead>
+  <div class="table-container">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Course</th>
+          <th>Enrollment Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
 
-        <tbody>
-          @for (enrollment of enrollments(); track enrollment.enrollmentId) {
-            <tr>
-              <td>
-                <div class="student-info">
-                  <div class="student-avatar">
-                    {{ enrollment.studentName.charAt(0).toUpperCase() }}
-                  </div>
+      <tbody>
+        @for (enrollment of enrollments(); track enrollment.enrollmentId) {
+        <tr>
+          <td>
+            <div class="student-info">
+              <div class="student-avatar">
+                {{ enrollment.studentName.charAt(0).toUpperCase() }}
+              </div>
 
-                  <div>
-                    <div class="student-name">
-                      {{ enrollment.studentName }}
-                    </div>
-                    <div class="student-email">
-                      {{ enrollment.studentEmail }}
-                    </div>
-                  </div>
+              <div>
+                <div class="student-name">
+                  {{ enrollment.studentName }}
                 </div>
-              </td>
+                <div class="student-email">
+                  {{ enrollment.studentEmail }}
+                </div>
+              </div>
+            </div>
+          </td>
 
-              <td>
-                <span class="course-name">
-                  {{ enrollment.courseName }}
-                </span>
-                <small class="course-id"> Course #{{ enrollment.courseId }} </small>
-              </td>
+          <td>
+            <span class="course-name">
+              {{ enrollment.courseName }}
+            </span>
+            <small class="course-id"> Course #{{ enrollment.courseId }} </small>
+          </td>
 
-              <td>
-                {{ enrollment.enrolledAt | date: 'dd MMM yyyy' }}
-              </td>
+          <td>
+            {{ enrollment.enrolledAt | date: 'dd MMM yyyy' }}
+          </td>
 
-              <td>
-                <span
-                  class="status-badge"
-                  [class.active]="enrollment.status === EnrollmentStatus.Active"
-                  [class.inactive]="enrollment.status !== EnrollmentStatus.Active"
-                >
-                  {{ enrollment.status === EnrollmentStatus.Active ? 'Active' : 'Cancelled' }}
-                </span>
-              </td>
-            </tr>
+          <td>
+            <span class="status-badge" [class.active]="enrollment.status === EnrollmentStatus.Active"
+              [class.inactive]="enrollment.status !== EnrollmentStatus.Active">
+              {{ enrollment.status === EnrollmentStatus.Active ? 'Active' : 'Cancelled' }}
+            </span>
+          </td>
+        </tr>
 
-          } @empty {
-            <tr>
-              <td colspan="4" class="empty-state">
-                <i class="bi bi-inbox"></i>
-                <p>No enrollments found.</p>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+        } @empty {
+        <tr>
+          <td colspan="4" class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>No enrollments found.</p>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container">
+    <span> Showing {{ enrollments().length }} of {{ totalRecords() }} enrollments </span>
+
+    <div class="pagination-actions">
+      <button class="btn btn-outline-secondary" [disabled]="pageNumber() === 1" (click)="previousPage()">
+        Previous
+      </button>
+
+      <span> Page {{ pageNumber() }} of {{ totalPages() }} </span>
+
+      <button class="btn btn-outline-secondary" [disabled]="pageNumber() >= totalPages()" (click)="nextPage()">
+        Next
+      </button>
     </div>
-
-    <!-- Pagination -->
-    <div class="pagination-container">
-      <span> Showing {{ enrollments().length }} of {{ totalRecords() }} enrollments </span>
-
-      <div class="pagination-actions">
-        <button
-          class="btn btn-outline-secondary"
-          [disabled]="pageNumber() === 1"
-          (click)="previousPage()"
-        >
-          Previous
-        </button>
-
-        <span> Page {{ pageNumber() }} of {{ totalPages() }} </span>
-
-        <button
-          class="btn btn-outline-secondary"
-          [disabled]="pageNumber() >= totalPages()"
-          (click)="nextPage()"
-        >
-          Next
-        </button>
-      </div>
-    </div>
+  </div>
   }
 </div>
