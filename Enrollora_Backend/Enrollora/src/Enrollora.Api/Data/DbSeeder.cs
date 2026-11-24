@@ -17,7 +17,7 @@ public static class DbSeeder
 
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
         var seed = configuration.GetSection("SeedAdmin");
-        var email = seed["Email"] ?? "admin@enrollora.local";
+        var email = seed["Email"] ?? "  ";
         var password = seed["Password"] ?? "Admin@123";
 
         db.AdminUsers.Add(new AdminUser

@@ -194,3 +194,67 @@
     justify-content: space-between;
   }
 }
+
+.filter-card {
+  background: white;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 18px rgba(40, 20, 70, 0.06);
+  margin-bottom: 24px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 150px;
+}
+
+.search-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #827a91;
+  text-transform: uppercase;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-filter {
+  background: #7544d8;
+  color: white;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 9px;
+}
+
+.btn-filter:hover {
+  background: #6132bf;
+  color: white;
+}
+
+.btn-reset {
+  background: #f1eef5;
+  color: #554c68;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 9px;
+}
+
+.btn-reset:hover {
+  background: #e4dff0;
+}

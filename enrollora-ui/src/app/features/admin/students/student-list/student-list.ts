@@ -1,10 +1,11 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+
 import { StudentService } from '../student.service';
 import { StudentResponse, StudentFilter, UpdateStudentRequest } from '../student.models';
-import { FormsModule } from '@angular/forms';
-import { ReactiveFormsModule } from '@angular/forms';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { EnrollmentService } from '../../../enrollments/enrollment.service';
+import { EnrollmentResponse } from '../../../enrollments/enrollment.models';
 
 @Component({
   selector: 'app-student-list',
@@ -15,12 +16,15 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 })
 export class StudentList implements OnInit {
   private studentService = inject(StudentService);
+  private enrollmentService = inject(EnrollmentService);
   private cdr = inject(ChangeDetectorRef);
 
   students: StudentResponse[] = [];
 
   isLoading = false;
   errorMessage = '';
+  actionMessage = '';
+  actionError = '';
 
   pageNumber = 1;
   pageSize = 5;
@@ -28,8 +32,14 @@ export class StudentList implements OnInit {
   totalPages = 0;
 
   selectedStudent: StudentResponse | null = null;
+  studentEnrollments: EnrollmentResponse[] = [];
   isDetailsLoading = false;
+  isEnrollmentsLoading = false;
   detailsError = '';
+
+  isEditModalOpen = false;
+  editingStudentId: number | null = null;
+  editError = '';
 
   filters: StudentFilter = {
     search: '',
@@ -40,6 +50,14 @@ export class StudentList implements OnInit {
     minCgpa: null,
     maxCgpa: null,
   };
+
+  studentForm = new FormGroup({
+    name: new FormControl('', Validators.required),
+    email: new FormControl({ value: '', disabled: true }),
+    department: new FormControl('', Validators.required),
+    age: new FormControl(18, [Validators.required, Validators.min(17), Validators.max(60)]),
+    cgpa: new FormControl(0, [Validators.required, Validators.min(0), Validators.max(10)]),
+  });
 
   ngOnInit(): void {
     this.loadStudents();
@@ -59,7 +77,6 @@ export class StudentList implements OnInit {
         this.isLoading = false;
         this.cdr.markForCheck();
       },
-
       error: (error) => {
         console.error('Failed to load students:', error);
         this.errorMessage = 'Unable to load students.';
@@ -74,14 +91,17 @@ export class StudentList implements OnInit {
       return;
     }
 
+    this.actionMessage = '';
+    this.actionError = '';
+
     this.studentService.approveStudent(id).subscribe({
       next: (response) => {
-        alert(response.message);
+        this.actionMessage = response.message || 'Student approved.';
         this.loadStudents();
       },
       error: (error) => {
-        console.error(error);
-        alert('Unable to approve student.');
+        this.actionError = error.error?.detail || error.error?.message || 'Unable to approve student.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -91,14 +111,17 @@ export class StudentList implements OnInit {
       return;
     }
 
+    this.actionMessage = '';
+    this.actionError = '';
+
     this.studentService.rejectStudent(id).subscribe({
       next: (response) => {
-        alert(response.message);
+        this.actionMessage = response.message || 'Student rejected.';
         this.loadStudents();
       },
       error: (error) => {
-        console.error(error);
-        alert('Unable to reject student.');
+        this.actionError = error.error?.detail || error.error?.message || 'Unable to reject student.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -145,7 +168,9 @@ export class StudentList implements OnInit {
 
   viewStudent(id: number): void {
     this.selectedStudent = null;
+    this.studentEnrollments = [];
     this.isDetailsLoading = true;
+    this.isEnrollmentsLoading = true;
     this.detailsError = '';
 
     this.studentService.getStudentById(id).subscribe({
@@ -161,25 +186,24 @@ export class StudentList implements OnInit {
         this.cdr.markForCheck();
       },
     });
+
+    this.enrollmentService.getEnrollmentsByStudent(id, 1, 20).subscribe({
+      next: (res) => {
+        this.studentEnrollments = res.items;
+        this.isEnrollmentsLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error('Failed to load student enrollments:', error);
+        this.isEnrollmentsLoading = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
-
-  isEditModalOpen = false;
-  editingStudentId: number | null = null;
-
-  studentForm = new FormGroup({
-    name: new FormControl('', Validators.required),
-
-    email: new FormControl('', [Validators.required, Validators.email]),
-
-    department: new FormControl('', Validators.required),
-
-    age: new FormControl(18, [Validators.required, Validators.min(17), Validators.max(60)]),
-
-    cgpa: new FormControl(0, [Validators.required, Validators.min(0), Validators.max(10)]),
-  });
 
   editStudent(id: number): void {
     this.editingStudentId = id;
+    this.editError = '';
     this.isEditModalOpen = true;
 
     this.studentService.getStudentById(id).subscribe({
@@ -191,9 +215,12 @@ export class StudentList implements OnInit {
           age: student.age,
           cgpa: student.cgpa,
         });
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Failed to load student details', error);
+        this.editError = 'Unable to load student details.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -201,6 +228,7 @@ export class StudentList implements OnInit {
   closeEditModal(): void {
     this.isEditModalOpen = false;
     this.editingStudentId = null;
+    this.editError = '';
     this.studentForm.reset({
       name: '',
       email: '',
@@ -212,28 +240,31 @@ export class StudentList implements OnInit {
 
   updateStudent(): void {
     if (this.studentForm.invalid || this.editingStudentId === null) {
+      this.studentForm.markAllAsTouched();
       return;
     }
 
+    this.editError = '';
     const formValue = this.studentForm.getRawValue();
 
     const studentData: UpdateStudentRequest = {
-      name: formValue.name!,
-      email: formValue.email!,
-      department: formValue.department!,
-      age: formValue.age!,
-      cgpa: formValue.cgpa!,
+      name: formValue.name!.trim(),
+      department: formValue.department!.trim(),
+      age: Number(formValue.age),
+      cgpa: Number(formValue.cgpa),
     };
 
     this.studentService.updateStudent(this.editingStudentId, studentData).subscribe({
-      next: (updatedStudent) => {
-        console.log('Student updated:', updatedStudent);
-
+      next: () => {
+        this.actionMessage = 'Student updated successfully.';
+        this.actionError = '';
         this.closeEditModal();
         this.loadStudents();
       },
       error: (error) => {
-        console.error('Failed to update student:', error);
+        this.editError =
+          error.error?.detail || error.error?.message || 'Failed to update student.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -243,12 +274,18 @@ export class StudentList implements OnInit {
       return;
     }
 
+    this.actionMessage = '';
+    this.actionError = '';
+
     this.studentService.deleteStudent(id).subscribe({
       next: () => {
+        this.actionMessage = 'Student deleted successfully.';
         this.loadStudents();
       },
       error: (error) => {
-        console.error('Failed to delete student:', error);
+        this.actionError =
+          error.error?.detail || error.error?.message || 'Unable to delete student.';
+        this.cdr.markForCheck();
       },
     });
   }

@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { EnrollmentResponse } from '../../enrollment.models';
+import { EnrollmentResponse, EnrollmentStatus } from '../../enrollment.models';
 import { EnrollmentService } from '../../enrollment.service';
 import {
   CancellationResponse,
@@ -19,6 +19,7 @@ import { CancellationService } from '../../cancellation.service';
   templateUrl: './my-enrollments.html',
 })
 export class MyEnrollments implements OnInit {
+  readonly EnrollmentStatus = EnrollmentStatus;
   private readonly enrollmentService = inject(EnrollmentService);
   private readonly cancellationService = inject(CancellationService);
 
@@ -155,7 +156,7 @@ export class MyEnrollments implements OnInit {
   }
 
   statusLabel(status: number): string {
-    return status === 1 ? 'Active' : 'Cancelled';
+    return status === EnrollmentStatus.Active ? 'Active' : 'Cancelled';
   }
 
   cancellationStatusLabel(status: number): string {

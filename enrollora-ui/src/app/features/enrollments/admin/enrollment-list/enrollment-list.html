@@ -21,7 +21,79 @@
       <h3>{{ totalRecords() }}</h3>
     </div>
   </div>
+<!-- Filters Toolbar -->
+  <div class="filter-card">
+    <div class="filter-row">
+      <div class="filter-group search-group">
+        <label for="enrollSearch">Search Student</label>
+        <input
+          id="enrollSearch"
+          type="text"
+          class="form-control"
+          placeholder="Name or email..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          (keyup.enter)="applyFilters()"
+        />
+      </div>
 
+      <div class="filter-group">
+        <label for="courseFilter">Course</label>
+        <select
+          id="courseFilter"
+          class="form-select"
+          [ngModel]="courseIdFilter()"
+          (ngModelChange)="courseIdFilter.set($event)"
+        >
+          <option [ngValue]="null">All Courses</option>
+          @for (course of courses(); track course.courseId) {
+            <option [ngValue]="course.courseId">{{ course.courseName }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="statusFilter">Status</label>
+        <select
+          id="statusFilter"
+          class="form-select"
+          [ngModel]="statusFilter()"
+          (ngModelChange)="statusFilter.set($event)"
+        >
+          <option [ngValue]="null">All Statuses</option>
+          <option [ngValue]="0">Active</option>
+          <option [ngValue]="1">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="fromDate">From Date</label>
+        <input
+          id="fromDate"
+          type="date"
+          class="form-control"
+          [ngModel]="fromDate()"
+          (ngModelChange)="fromDate.set($event)"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="toDate">To Date</label>
+        <input
+          id="toDate"
+          type="date"
+          class="form-control"
+          [ngModel]="toDate()"
+          (ngModelChange)="toDate.set($event)"
+        />
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-filter" (click)="applyFilters()">Filter</button>
+        <button class="btn btn-reset" (click)="resetFilters()">Reset</button>
+      </div>
+    </div>
+  </div>
   <!-- Loading -->
   @if (isLoading()) {
     <div class="state-message">
@@ -85,10 +157,10 @@
               <td>
                 <span
                   class="status-badge"
-                  [class.active]="enrollment.status === 1"
-                  [class.inactive]="enrollment.status !== 1"
+                  [class.active]="enrollment.status === EnrollmentStatus.Active"
+                  [class.inactive]="enrollment.status !== EnrollmentStatus.Active"
                 >
-                  {{ enrollment.status === 1 ? 'Active' : 'Cancelled' }}
+                  {{ enrollment.status === EnrollmentStatus.Active ? 'Active' : 'Cancelled' }}
                 </span>
               </td>
             </tr>

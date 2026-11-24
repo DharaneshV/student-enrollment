@@ -8,6 +8,19 @@
     <div class="student-count">Total Students: {{ totalRecords }}</div>
   </div>
 
+  @if (actionMessage) {
+    <div class="alert alert-success d-flex justify-content-between align-items-center">
+      <span>{{ actionMessage }}</span>
+      <button type="button" class="btn-close" (click)="actionMessage = ''"></button>
+    </div>
+  }
+
+  @if (actionError) {
+    <div class="alert alert-danger d-flex justify-content-between align-items-center">
+      <span>{{ actionError }}</span>
+      <button type="button" class="btn-close" (click)="actionError = ''"></button>
+    </div>
+  }
   @if (isLoading) {
     <div class="loading-state">
       <div class="spinner-border text-primary"></div>
@@ -288,7 +301,34 @@
           <h3>Student Details</h3>
           <p>Registration information and academic profile</p>
         </div>
+<!-- Enrolled Courses -->
+          <div class="details-section mt-3">
+            <h5>Enrolled Courses ({{ studentEnrollments.length }})</h5>
 
+            @if (isEnrollmentsLoading) {
+              <p class="empty-enrollments">Loading enrollments...</p>
+            } @else if (studentEnrollments.length === 0) {
+              <p class="empty-enrollments">No course enrollments yet.</p>
+            } @else {
+              <div class="enrollments-list">
+                @for (item of studentEnrollments; track item.enrollmentId) {
+                  <div class="enrollment-item">
+                    <div>
+                      <strong>{{ item.courseName }}</strong>
+                      <small>Enrolled {{ item.enrolledAt | date: 'dd MMM yyyy' }}</small>
+                    </div>
+                    <span
+                      class="enrollment-status"
+                      [class.active]="item.status === 0"
+                      [class.cancelled]="item.status !== 0"
+                    >
+                      {{ item.status === 0 ? 'Active' : 'Cancelled' }}
+                    </span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         <button
           type="button"
           class="modal-close"
@@ -417,6 +457,9 @@
       </div>
 
       <div class="student-modal-body">
+        @if (editError) {
+          <div class="alert alert-danger py-2">{{ editError }}</div>
+        }
         <form [formGroup]="studentForm" (ngSubmit)="updateStudent()">
           <div class="mb-3">
             <label class="form-label">Student Name</label>

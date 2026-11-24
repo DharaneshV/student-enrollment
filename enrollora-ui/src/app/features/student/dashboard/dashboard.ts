@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 
 import { CourseResponse } from '../../admin/courses/course.models';
 import { CourseService } from '../../admin/courses/course.service';
-import { EnrollmentResponse } from '../../enrollments/enrollment.models';
+import { EnrollmentResponse, EnrollmentStatus } from '../../enrollments/enrollment.models';
 import { EnrollmentService } from '../../enrollments/enrollment.service';
 
 @Component({
@@ -16,6 +16,7 @@ import { EnrollmentService } from '../../enrollments/enrollment.service';
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
+  readonly EnrollmentStatus = EnrollmentStatus;
   private readonly courseService = inject(CourseService);
   private readonly enrollmentService = inject(EnrollmentService);
 
@@ -92,7 +93,7 @@ export class Dashboard implements OnInit {
           };
 
           this.enrollmentService
-            .getMyEnrollments(1, 1, { status: 1 })
+            .getMyEnrollments(1, 1, { status: EnrollmentStatus.Active })
             .subscribe({
               next: (activeResponse) => {
                 this.activeEnrollmentCount.set(activeResponse.totalRecords);
@@ -107,7 +108,7 @@ export class Dashboard implements OnInit {
             });
 
           this.enrollmentService
-            .getMyEnrollments(1, 1, { status: 0 })
+            .getMyEnrollments(1, 1, { status: EnrollmentStatus.Cancelled })
             .subscribe({
               next: (cancelledResponse) => {
                 this.cancelledEnrollmentCount.set(cancelledResponse.totalRecords);
@@ -132,7 +133,7 @@ export class Dashboard implements OnInit {
   }
 
   statusLabel(status: number): string {
-    return status === 1 ? 'Active' : 'Cancelled';
+    return status === EnrollmentStatus.Active ? 'Active' : 'Cancelled';
   }
 
   private getErrorMessage(error: HttpErrorResponse, fallback: string): string {

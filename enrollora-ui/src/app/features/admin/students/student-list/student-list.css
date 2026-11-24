@@ -868,3 +868,57 @@
     padding: 11px 17px 14px;
   }
 }
+.enrollments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.enrollment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #faf7ff;
+  border: 1px solid #eee5f8;
+  border-radius: 10px;
+}
+
+.enrollment-item strong {
+  display: block;
+  font-size: 13px;
+  color: #291743;
+}
+
+.enrollment-item small {
+  font-size: 11px;
+  color: #887b99;
+}
+
+.enrollment-status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.enrollment-status.active {
+  background: #d7f8e8;
+  color: #087c52;
+}
+
+.enrollment-status.cancelled {
+  background: #ffe0e9;
+  color: #c32c58;
+}
+
+.empty-enrollments {
+  font-size: 12px;
+  color: #887b99;
+  margin: 6px 0 0;
+}
